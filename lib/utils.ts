@@ -122,9 +122,74 @@ export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-/** Deterministic picsum photo url for a seed. */
+const unsplash = (photoId: string, w: number) =>
+  `https://unsplash.com/photos/${photoId}/download?force=true&w=${w}`;
+
+const hashSeed = (seed: string) => {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const MAIN_ROOM_PHOTOS = {
+  single: [
+    "bpFuHFy-wVY",
+    "1UmDSpaeL3Q",
+    "l3gjB0DnZOY",
+    "s25kIXufhg8",
+    "VyWZFaX5ojc",
+  ],
+  double: [
+    "6xmw_0awSqU",
+    "P6B7y6Gnyzw",
+    "08ZgZuUwy2o",
+    "R9e-yPN14Uo",
+  ],
+  studio: [
+    "P1-yh8uIzlw",
+    "kxKimJOxjkU",
+    "WDUtNbot6Qw",
+    "tXRZlvMsVoY",
+  ],
+} as const;
+
+const GALLERY_PHOTOS = {
+  b: [
+    "N1GtLcYaZ8Q",
+    "yi8JorcxASc",
+    "RQt6pL6DiPA",
+    "uzDU1zI4i-M",
+  ],
+  c: [
+    "pO5f_EC9DpE",
+    "GHk_WNE0ZlA",
+    "Xjv88buY8x0",
+    "nmiyDZI1oc4",
+  ],
+  d: [
+    "eBWlEOjpCVs",
+    "BwYo0hwJU6w",
+    "OjX9PWvbarc",
+    "r68eIg0hzpo",
+  ],
+} as const;
+
+function roomTypeFromSeed(seed: string): keyof typeof MAIN_ROOM_PHOTOS {
+  const match = seed.match(/^(?:dorm|room)(\d{3})/);
+  if (!match) return "single";
+  const number = match[1];
+  const floor = Number(number[0]);
+  const position = Number(number.slice(1));
+  if (floor >= 5) return position <= 2 ? "studio" : "double";
+  if (floor === 4) return position === 1 ? "studio" : position <= 3 ? "double" : "single";
+  return position === 4 ? "double" : "single";
+}
+
+/** Stable free room photo url for a seed, matched to dorm room type and gallery angle. */
 export function roomPhoto(seed: string, w = 800, h = 600): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
+  const galleryKey = seed.match(/[bcd]$/)?.[0] as keyof typeof GALLERY_PHOTOS | undefined;
+  const pool = galleryKey ? GALLERY_PHOTOS[galleryKey] : MAIN_ROOM_PHOTOS[roomTypeFromSeed(seed)];
+  return unsplash(pool[hashSeed(seed) % pool.length], w);
 }
 
 /** Initials from a Thai / latin name. */

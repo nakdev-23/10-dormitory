@@ -30,7 +30,9 @@ export function RoomImage({
         alt={alt}
         fill
         sizes={sizes}
-        priority={priority}
+        preload={priority}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
         onLoad={() => setLoaded(true)}
         className={cn(
           "object-cover transition-opacity duration-500",

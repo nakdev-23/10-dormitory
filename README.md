@@ -86,4 +86,4 @@ npm run build    # production build (passes clean)
 npm run start
 ```
 
-> Demo only — no real payments or uploads. Room photos come from picsum.photos.
+> Demo only — no real payments or uploads. Room photos use free Unsplash images.
